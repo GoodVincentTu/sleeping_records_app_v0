@@ -6,4 +6,4 @@
  - We need a RESTful API, to satisfy 3 requirements:
     1. [] The user can check-in and check-out, also check their check-in and check-out records (be able to sort by checking time.).
     2. [] The user can follow and unfollow another user’s checking records.
-    3. p[ The user can view all the following users’ sleeping records. (be able to sort by sleeping time length.) 
+    3. [] The user can view all the following users’ sleeping records. (be able to sort by sleeping time length.) 
