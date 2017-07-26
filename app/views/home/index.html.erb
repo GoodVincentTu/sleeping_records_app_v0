@@ -1,0 +1,234 @@
+<nav>
+  <% unless user_signed_in? %>
+    <div class="signUp">
+      <%= form_for(User.new, url: user_registration_path) do |f| %>
+        <ul>
+          <li>
+            <%= f.email_field :email, placeholder: 'Email' %>
+          </li>
+          <li>
+            <%= f.password_field :password, autocomplete: "off", placeholder: 'Password' %>
+          </li>
+        </ul>
+
+        <%= f.submit 'Register' , :id => "emailLogin_btn"%>
+      <% end %>
+    </div>
+    <hr>
+    <div class="logIn">
+      <%= form_for(User.new, url: user_session_path) do |f| %>
+        <ul>
+          <li>
+            <%= f.email_field :email, placeholder: 'Email' %>
+          </li>
+          <li>
+            <%= f.password_field :password, autocomplete: "off", placeholder: 'Password' %>
+          </li>
+        </ul>
+
+        <%= f.submit 'Log in' %>
+      <% end %>
+    </div>
+  <% else %>
+    <h2>Logged in as : <strong><%= current_user.email %></strong> </h2>
+  <% end %>
+</nav>
+
+<hr>
+
+<% if user_signed_in? %>
+  <!-- form for user to create records -->
+  <form id="checkInRecord">
+    Check in time
+    <input type="datetime-local" id="started_at" required>
+    <button type="button" id="checkInSubmit">Check In</button>
+  </form>
+  <br>
+  <form id="checkOutRecord">
+    Check out time
+    <input type="number" id="recordId" required>
+    <input type="datetime-local" id="ended_at" required>
+    <button type="button" id="checkOutSubmit">Check Out</button>
+  </form>
+  <br>
+  <form id="deleteRecord">
+    Delete records <br>
+    Record ID : <input type="number" id="deleteRecordId" required>
+    <button type="button" id="deleteRecordSubmit">Delete Record</button>
+  </form>
+  <hr>
+
+  <form id="followingForm">
+    Follow <br>
+    User ID : <input type="number" id="followingId" required>
+    <button type="button" id="followSubmit">Follow</button>
+  </form>
+  <br>
+  <form id="unfollowingForm">
+    Unfollow <br>
+    User ID : <input type="number" id="unFollowingId" required>
+    <button type="button" id="unfollowSubmit">Unfollow</button>
+  </form>
+
+  <hr>
+
+  <h3>The List of Following Users</h3>
+  <div id="followingUser">
+    <ul></ul>
+  </div>
+  <br>
+  <h3>The List of Sleeping Reocrds</h3>
+  <div id="followingRecords">
+    <ol></ol>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      var jwt = "<%= session[:jwt] %>";
+      var forEach = Array.prototype.forEach;
+
+      $.ajax({
+        url: '/api/v1/following',
+        type: 'GET',
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+        }
+      })
+      .done(function(response) {
+        // console.log(response.data);
+        var appendLiElements = '';
+        forEach.call(response.data, function(user){
+          appendLiElements += "<li class='followingLi' id=" + user.id + ">" +
+            user.attributes.email + "</li>"
+        });
+        $('#followingUser > ul').append(appendLiElements);
+
+        $('li.followingLi').on('click', function(event) {
+          var element = event.target;
+          var id = $(element).attr('id');
+          $.ajax({
+            url: '/api/v1/following/' + id + '/sleeping_records',
+            type: 'GET',
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+            }
+          })
+          .done(function(response) {
+            // console.log(response.data);
+            var appendRecordLiElements = '';
+            forEach.call(response.data, function(record){
+              appendRecordLiElements += "<li><ul><li>" +
+                record.attributes["started-at"] + "</li><li>" +
+                record.attributes["ended-at"] + "</li><li>" +
+                record.attributes["duration-hours"] + " hours</li></ul></li>"
+            });
+            $('#followingRecords > ol').append(appendRecordLiElements);
+          })
+        });
+      })
+
+
+      $('#checkInSubmit').on('click', function(event) {
+        event.preventDefault();
+        var started_at = $('#started_at').val();
+
+        $.ajax({
+          url: '/api/v1/sleeping_records/check_in',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+          },
+          type: 'POST',
+          data: {
+            started_at: started_at
+          },
+          success: function(response){
+            // console.log(response);
+            alert('Success!')
+          }
+        })
+      });
+
+      $('#checkOutSubmit').on('click', function(event) {
+        event.preventDefault();
+        var id = $('#recordId').val();
+        var ended_at = $('#ended_at').val();
+
+        $.ajax({
+          url: '/api/v1/sleeping_records/'+ id +'/check_out',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+          },
+          type: 'PATCH',
+          data: {
+            id: id,
+            ended_at: ended_at
+          },
+          success: function(response){
+            // console.log(response);
+            alert('Success!')
+          }
+        })
+      });
+
+      $('#deleteRecordSubmit').on('click', function(event) {
+        event.preventDefault();
+        var id = $('#deleteRecordId').val();
+
+        $.ajax({
+          url: '/api/v1/sleeping_records/'+ id,
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+          },
+          type: 'DELETE',
+          success: function(response){
+            // console.log(response);
+            alert('Success!')
+          }
+        })
+      });
+
+      $('#followSubmit').on('click', function(event) {
+        event.preventDefault();
+        var id = $('#followingId').val();
+
+        $.ajax({
+          url: '/api/v1/users/'+ id + '/follow',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+          },
+          type: 'POST',
+          success: function(response){
+            // console.log(response);
+            alert('Success!')
+          }
+        })
+      });
+
+      $('#unfollowSubmit').on('click', function(event) {
+        event.preventDefault();
+        var id = $('#unFollowingId').val();
+
+        $.ajax({
+          url: '/api/v1/users/'+ id + '/unfollow',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+          },
+          type: 'POST',
+          success: function(response){
+            // console.log(response);
+            alert('Success!')
+          }
+        })
+      });
+    });
+  </script>
+
+  <style media="screen">
+    .followingLi:hover {
+      background-color: blue;
+    }
+  </style>
+
+<% else %>
+  <p> You should login first </p>
+<% end %>
