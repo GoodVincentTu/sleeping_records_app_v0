@@ -10,16 +10,16 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       get 'all_users' => 'users#index'
+      get 'following' => 'users#following'
+      get 'following/:id/sleeping_records' => 'users#following_records'
 
-      # follow and unfollow user
+      post 'users/:id/follow'   => 'users#follow'
+      post 'users/:id/unfollow' => 'users#unfollow'
 
       get    'sleeping_records'               => 'sleeping_records#index'
       post   'sleeping_records/check_in'      => 'sleeping_records#check_in'
       patch  'sleeping_records/:id/check_out' => 'sleeping_records#check_out'
       delete 'sleeping_records/:id'           => 'sleeping_records#destroy'
-
-      # get followings
-      # get the sleeping_records of the following
     end
   end
 end

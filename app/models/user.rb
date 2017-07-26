@@ -13,4 +13,12 @@ class User < ApplicationRecord
                        as: :followed,
                        source: :follower,
                        dependent: :destroy
+
+  def follow(user)
+    following.create!(followed: user)
+  end
+
+  def unfollow(user)
+    following.find_by(followed: user).try(:destroy)
+  end
 end
