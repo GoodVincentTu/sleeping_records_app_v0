@@ -43,11 +43,18 @@
     <input type="datetime-local" id="started_at" required>
     <button type="button" id="checkInSubmit">Check In</button>
   </form>
-  <form class="checkOutRecord">
+  <br>
+  <form id="checkOutRecord">
     Check out time
     <input type="number" id="recordId" required>
     <input type="datetime-local" id="ended_at" required>
     <button type="button" id="checkOutSubmit">Check Out</button>
+  </form>
+  <br>
+  <form id="deleteRecord">
+    Delete records <br>
+    ID : <input type="number" id="deleteRecordId" required>
+    <button type="button" id="deleteRecordSubmit">Delete Record</button>
   </form>
   <hr>
 
@@ -97,6 +104,23 @@
             id: id,
             ended_at: ended_at
           },
+          success: function(response){
+            // console.log(response);
+            alert('Success!')
+          }
+        })
+      });
+
+      $('#deleteRecordSubmit').on('click', function(event) {
+        event.preventDefault();
+        var id = $('#deleteRecordId').val();
+
+        $.ajax({
+          url: '/api/v1/sleeping_records/'+ id,
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+          },
+          type: 'DELETE',
           success: function(response){
             // console.log(response);
             alert('Success!')

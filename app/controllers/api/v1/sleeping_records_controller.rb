@@ -14,7 +14,6 @@ class Api::V1::SleepingRecordsController < ApiController
 
   def check_out
     record = current_user.sleeping_records.find(params[:id])
-
     if record.update!(ended_at: params[:ended_at])
       render json: record
     else
@@ -25,7 +24,7 @@ class Api::V1::SleepingRecordsController < ApiController
   def destroy
     record = current_user.sleeping_records.find(params[:id])
     if record.destroy!
-      render status: 200
+      render json: {}, status: 204
     else
       render json: {errors: ["Fail to destroy the data"]}, status: 400
     end

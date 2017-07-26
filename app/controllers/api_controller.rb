@@ -11,7 +11,6 @@ class ApiController < ApplicationController
   end
 
   def authenticate_token!
-    byebug
     payload = JsonWebToken.decode(auth_token)
     @current_user = User.find(payload["sub"])
   rescue
