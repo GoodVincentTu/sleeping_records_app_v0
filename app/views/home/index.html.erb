@@ -53,21 +53,80 @@
   <br>
   <form id="deleteRecord">
     Delete records <br>
-    ID : <input type="number" id="deleteRecordId" required>
+    Record ID : <input type="number" id="deleteRecordId" required>
     <button type="button" id="deleteRecordSubmit">Delete Record</button>
   </form>
   <hr>
 
+  <form id="followingForm">
+    Follow <br>
+    User ID : <input type="number" id="followingId" required>
+    <button type="button" id="followSubmit">Follow</button>
+  </form>
+  <br>
+  <form id="unfollowingForm">
+    Unfollow <br>
+    User ID : <input type="number" id="unFollowingId" required>
+    <button type="button" id="unfollowSubmit">Unfollow</button>
+  </form>
 
-  <!-- tab -->
-  <!-- form for user id to follow and unfollow -->
-  <!-- list for all users -->
-  <!-- list for all followers -->
-  <!-- list for all followings -->
+  <hr>
+
+  <h3>The List of Following Users</h3>
+  <div id="followingUser">
+    <ul></ul>
+  </div>
+  <br>
+  <h3>The List of Sleeping Reocrds</h3>
+  <div id="followingRecords">
+    <ol></ol>
+  </div>
 
   <script>
     $(document).ready(function() {
       var jwt = "<%= session[:jwt] %>";
+      var forEach = Array.prototype.forEach;
+
+      $.ajax({
+        url: '/api/v1/following',
+        type: 'GET',
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+        }
+      })
+      .done(function(response) {
+        // console.log(response.data);
+        var appendLiElements = '';
+        forEach.call(response.data, function(user){
+          appendLiElements += "<li class='followingLi' id=" + user.id + ">" +
+            user.attributes.email + "</li>"
+        });
+        $('#followingUser > ul').append(appendLiElements);
+
+        $('li.followingLi').on('click', function(event) {
+          var element = event.target;
+          var id = $(element).attr('id');
+          $.ajax({
+            url: '/api/v1/following/' + id + '/sleeping_records',
+            type: 'GET',
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+            }
+          })
+          .done(function(response) {
+            // console.log(response.data);
+            var appendRecordLiElements = '';
+            forEach.call(response.data, function(record){
+              appendRecordLiElements += "<li><ul><li>" +
+                record.attributes["started-at"] + "</li><li>" +
+                record.attributes["ended-at"] + "</li><li>" +
+                record.attributes["duration-hours"] + " hours</li></ul></li>"
+            });
+            $('#followingRecords > ol').append(appendRecordLiElements);
+          })
+        });
+      })
+
 
       $('#checkInSubmit').on('click', function(event) {
         event.preventDefault();
@@ -127,8 +186,48 @@
           }
         })
       });
+
+      $('#followSubmit').on('click', function(event) {
+        event.preventDefault();
+        var id = $('#followingId').val();
+
+        $.ajax({
+          url: '/api/v1/users/'+ id + '/follow',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+          },
+          type: 'POST',
+          success: function(response){
+            // console.log(response);
+            alert('Success!')
+          }
+        })
+      });
+
+      $('#unfollowSubmit').on('click', function(event) {
+        event.preventDefault();
+        var id = $('#unFollowingId').val();
+
+        $.ajax({
+          url: '/api/v1/users/'+ id + '/unfollow',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
+          },
+          type: 'POST',
+          success: function(response){
+            // console.log(response);
+            alert('Success!')
+          }
+        })
+      });
     });
   </script>
+
+  <style media="screen">
+    .followingLi:hover {
+      background-color: blue;
+    }
+  </style>
 
 <% else %>
   <p> You should login first </p>

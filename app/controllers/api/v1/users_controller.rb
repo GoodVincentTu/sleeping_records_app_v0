@@ -1,8 +1,4 @@
 class Api::V1::UsersController < ApiController
-  def index
-    render json: all_users
-  end
-
   def following
     users = User.where(id: current_user.following.pluck(:followed_id))
     render json: users
@@ -24,11 +20,5 @@ class Api::V1::UsersController < ApiController
     user = User.find(params[:id])
     current_user.unfollow(user)
     render json: {}, status: 204
-  end
-
-  private
-
-  def all_users
-    User.where.not(id: current_user.id)
   end
 end

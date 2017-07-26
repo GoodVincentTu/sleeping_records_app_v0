@@ -9,7 +9,6 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      get 'all_users' => 'users#index'
       get 'following' => 'users#following'
       get 'following/:id/sleeping_records' => 'users#following_records'
 
